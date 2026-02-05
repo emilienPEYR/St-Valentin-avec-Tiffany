@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Saint-Valentin</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --pink-0: #fff7f8;
+        --pink-1: #ffd6e3;
+        --pink-2: #ff9fbc;
+        --pink-3: #ff6f9a;
+        --pink-4: #e6487a;
+        --pink-5: #c73a6a;
+        --text: #7a2146;
+        --card: rgba(255, 255, 255, 0.38);
+        --card-border: rgba(255, 255, 255, 0.6);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Montserrat", sans-serif;
+        background:
+          radial-gradient(520px 520px at 16% 12%, rgba(255, 96, 140, 0.6), transparent 60%),
+          radial-gradient(460px 460px at 80% 70%, rgba(230, 72, 122, 0.75), transparent 58%),
+          radial-gradient(420px 420px at 52% 76%, rgba(255, 159, 188, 0.75), transparent 55%),
+          linear-gradient(160deg, var(--pink-0), #ffeef3 60%, #fff8fb 100%);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .container {
+        text-align: center;
+        padding: 32px 28px;
+        background: var(--card);
+        border-radius: 20px;
+        border: 1px solid var(--card-border);
+        box-shadow: 0 18px 45px rgba(199, 58, 106, 0.25);
+        backdrop-filter: blur(14px) saturate(140%);
+        width: min(92vw, 520px);
+      }
+
+      h1 {
+        font-family: "Montserrat", sans-serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        margin: 0 0 24px;
+        font-weight: 700;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        position: relative;
+      }
+
+      button {
+        border: none;
+        padding: 14px 28px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        border-radius: 999px;
+        cursor: pointer;
+        color: #ffffff;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+        transition: transform 160ms ease, box-shadow 160ms ease;
+      }
+
+      button:active {
+        transform: translateY(1px) scale(0.98);
+      }
+
+      .yes {
+        background: linear-gradient(135deg, var(--pink-2), var(--pink-3));
+      }
+
+      .no {
+        background: linear-gradient(135deg, #ff7fa4, var(--pink-4));
+        position: relative;
+        transition: transform 100ms ease-out;
+      }
+
+      #message {
+        margin-top: 24px;
+        min-height: 40px;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--pink-5);
+      }
+
+      .celebrate {
+        animation: pop 600ms ease forwards;
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.7);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.15);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .confetti {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .confetti span {
+        position: absolute;
+        width: 10px;
+        height: 14px;
+        border-radius: 2px;
+        opacity: 0.9;
+        animation: fall 1.6s ease forwards;
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(-20px) rotate(0deg);
+          opacity: 0;
+        }
+        20% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(240deg);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <h1 id="title">Tiffany, veux-tu être ma Valentine ?</h1>
+      <div class="buttons">
+        <button class="yes" id="yesBtn">Oui</button>
+        <button class="no" id="noBtn">Non</button>
+      </div>
+      <div id="message" aria-live="polite"></div>
+    </main>
+    <div class="confetti" id="confetti"></div>
+
+    <script>
+      const noBtn = document.getElementById("noBtn");
+      const yesBtn = document.getElementById("yesBtn");
+      const message = document.getElementById("message");
+      const title = document.getElementById("title");
+      const confetti = document.getElementById("confetti");
+      const buttons = document.querySelector(".buttons");
+      let baseRect = null;
+      let currentOffset = { x: 0, y: 0 };
+      let noClickCount = 0;
+
+      const captureBaseRect = () => {
+        baseRect = noBtn.getBoundingClientRect();
+        currentOffset = { x: 0, y: 0 };
+        noBtn.style.transform = "translate(0px, 0px)";
+      };
+
+      const clampOffset = (offsetX, offsetY) => {
+        if (!baseRect) return { x: offsetX, y: offsetY };
+        const padding = 8;
+        const minX = padding - baseRect.left;
+        const maxX = window.innerWidth - baseRect.right - padding;
+        const minY = padding - baseRect.top;
+        const maxY = window.innerHeight - baseRect.bottom - padding;
+        return {
+          x: Math.max(minX, Math.min(offsetX, maxX)),
+          y: Math.max(minY, Math.min(offsetY, maxY)),
+        };
+      };
+
+      const launchConfetti = () => {
+        confetti.innerHTML = "";
+        const colors = ["#ff9fbc", "#ff6f9a", "#e6487a", "#ffd6e3", "#ffffff"];
+        for (let i = 0; i < 80; i += 1) {
+          const piece = document.createElement("span");
+          const size = 6 + Math.random() * 8;
+          piece.style.left = `${Math.random() * 100}vw`;
+          piece.style.background = colors[i % colors.length];
+          piece.style.width = `${size}px`;
+          piece.style.height = `${size * 1.2}px`;
+          piece.style.animationDelay = `${Math.random() * 0.4}s`;
+          confetti.appendChild(piece);
+        }
+        setTimeout(() => {
+          confetti.innerHTML = "";
+        }, 2200);
+      };
+
+      const dangerRadius = 150;
+      const minGap = 16;
+      const maxNudge = 34;
+
+      const onMouseMove = (event) => {
+        if (!baseRect) captureBaseRect();
+        const centerX = baseRect.left + baseRect.width / 2 + currentOffset.x;
+        const centerY = baseRect.top + baseRect.height / 2 + currentOffset.y;
+        const dx = event.clientX - centerX;
+        const dy = event.clientY - centerY;
+        const distance = Math.hypot(dx, dy);
+        if (distance < dangerRadius) {
+          const normX = distance === 0 ? 1 : dx / distance;
+          const normY = distance === 0 ? 0 : dy / distance;
+          const desired = Math.min(maxNudge, dangerRadius - distance + minGap);
+          let nextX = currentOffset.x - normX * desired;
+          let nextY = currentOffset.y - normY * desired;
+          let clamped = clampOffset(nextX, nextY);
+
+          if (clamped.x !== nextX || clamped.y !== nextY) {
+            const centerX = window.innerWidth / 2 - (baseRect.left + baseRect.width / 2);
+            const centerY = window.innerHeight / 2 - (baseRect.top + baseRect.height / 2);
+            const centerStepX = Math.sign(centerX) * 8;
+            const centerStepY = Math.sign(centerY) * 8;
+            clamped = clampOffset(clamped.x + centerStepX, clamped.y + centerStepY);
+          }
+
+          currentOffset = clamped;
+          noBtn.style.transform = `translate(${clamped.x}px, ${clamped.y}px)`;
+        }
+      };
+
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("resize", captureBaseRect);
+
+      yesBtn.addEventListener("click", () => {
+        title.textContent = "Cooool, ok on fait pas de 10km (ou peut-être que si) 😘";
+        title.classList.add("celebrate");
+        message.textContent = "";
+        message.classList.remove("celebrate");
+        if (buttons) {
+          buttons.style.display = "none";
+        }
+        launchConfetti();
+      });
+
+      noBtn.addEventListener("click", () => {
+        yesBtn.textContent = "Si, je veux !";
+        noBtn.textContent = "Absolument";
+        noClickCount += 1;
+        if (noClickCount === 1) {
+          title.textContent = "T'es sur ? 🥹";
+          return;
+        }
+        const vraiment = " vraiment".repeat(noClickCount - 1);
+        title.textContent = `T'es sur ?${vraiment} 🥹`;
+      });
+
+      captureBaseRect();
+
+    </script>
+  </body>
+</html>
