@@ -95,8 +95,8 @@
       #message {
         margin-top: 24px;
         min-height: 40px;
-        font-size: 1.35rem;
-        font-weight: 700;
+        font-size: 1.2rem;
+        font-weight: 500;
         color: var(--pink-5);
       }
 
@@ -171,6 +171,7 @@
       let baseRect = null;
       let currentOffset = { x: 0, y: 0 };
       let noClickCount = 0;
+      let noCooldown = false;
 
       const captureBaseRect = () => {
         baseRect = noBtn.getBoundingClientRect();
@@ -214,6 +215,7 @@
       const maxNudge = 34;
 
       const onMouseMove = (event) => {
+        if (noCooldown) return;
         if (!baseRect) captureBaseRect();
         const centerX = baseRect.left + baseRect.width / 2 + currentOffset.x;
         const centerY = baseRect.top + baseRect.height / 2 + currentOffset.y;
@@ -245,10 +247,10 @@
       window.addEventListener("resize", captureBaseRect);
 
       yesBtn.addEventListener("click", () => {
-        title.textContent = "Cooool, ok on fait pas de 10km (ou peut-être que si) 😘";
+        title.textContent = "Cooool, ok on va pas courir samedi (ou peut-être que si) 😘";
         title.classList.add("celebrate");
-        message.textContent = "";
-        message.classList.remove("celebrate");
+        message.textContent = "Hâte d'être samedi, passe une bonne journée !";
+        message.classList.add("celebrate");
         if (buttons) {
           buttons.style.display = "none";
         }
@@ -259,6 +261,12 @@
         yesBtn.textContent = "Si, je veux !";
         noBtn.textContent = "Absolument";
         noClickCount += 1;
+        currentOffset = { x: 0, y: 0 };
+        noBtn.style.transform = "translate(0px, 0px)";
+        noCooldown = true;
+        setTimeout(() => {
+          noCooldown = false;
+        }, 500);
         if (noClickCount === 1) {
           title.textContent = "T'es sur ? 🥹";
           return;
